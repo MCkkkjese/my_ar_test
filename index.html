@@ -6,108 +6,9 @@
         <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
         <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
         <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
-
-        <style>
-            #permission-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(255, 255, 255, 0.95);
-                z-index: 9999;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-                padding: 20px;
-                box-sizing: border-box;
-                text-align: center;
-            }
-
-            .prompt-box {
-                max-width: 400px;
-                background: #ffffff;
-                padding: 30px;
-                border-radius: 16px;
-                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            }
-
-            .icon {
-                font-size: 48px;
-                margin-bottom: 15px;
-            }
-
-            h2 {
-                color: #333;
-                margin: 0 0 10px 0;
-                font-size: 22px;
-            }
-
-            p {
-                color: #666;
-                font-size: 15px;
-                line-height: 1.6;
-                margin: 0 0 25px 0;
-            }
-
-            .btn {
-                background-color: #007aff;
-                color: white;
-                border: none;
-                padding: 12px 30px;
-                font-size: 16px;
-                font-weight: 600;
-                border-radius: 8px;
-                cursor: pointer;
-                transition: background 0.2s;
-                width: 100%;
-            }
-
-            .btn:hover {
-                background-color: #0056b3;
-            }
-
-            .instruction {
-                display: none;
-                text-align: left;
-                background: #f2f2f7;
-                padding: 15px;
-                border-radius: 8px;
-                margin-top: 15px;
-                font-size: 14px;
-                color: #444;
-            }
-            
-            .instruction ol {
-                padding-left: 20px;
-                margin: 5px 0 0 0;
-            }
-        </style>
     </head>
 
     <body style="margin: 0; overflow: hidden;">
-
-        <div id="permission-overlay">
-            <div class="prompt-box">
-                <div class="icon" id="prompt-icon">📷</div>
-                <h2 id="prompt-title">啟用相機以開始 AR</h2>
-                <p id="prompt-desc">本體驗需要使用您的相機。請點擊下方按鈕，並在系統彈窗中選擇「允許」。</p>
-                
-                <button id="start-btn" class="btn" onclick="requestCamera()">開啟相機</button>
-                
-                <div id="manual-guide" class="instruction">
-                    <strong id="guide-title">手動開啟步驟：</strong>
-                    <ol id="guide-steps">
-                        <li>點擊網址列左側的<strong>「鎖頭」</strong>或<strong>「設定」</strong>圖示。</li>
-                        <li>將<strong>「相機」</strong>權限改為<strong>「允許」</strong>。</li>
-                        <li>重新整理網頁即可開始體驗。</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-
         <a-scene
             vr-mode-ui="enabled: false;"
             loading-screen="enabled: false;"
@@ -118,7 +19,10 @@
             gesture-detector
         >
             <a-assets>
-                <a-asset-item id="animated-asset" src="assets/asset.glb"></a-asset-item>
+                <a-asset-item
+                    id="animated-asset"
+                    src="assets/asset.glb"
+                ></a-asset-item>
             </a-assets>
 
             <a-marker
@@ -133,7 +37,7 @@
             >
                 <a-entity
                     id="bowser-model"
-                    scale="1.0535576154901432 1.0535576154901432 1.0535576154901432"
+                    scale="0.21071152309802804 0.21071152309802804 0.21071152309802804"
                     animation-mixer="loop: repeat"
                     gltf-model="#animated-asset"
                     class="clickable"
@@ -143,54 +47,5 @@
 
             <a-entity camera></a-entity>
         </a-scene>
-
-        <script>
-            function showManualInstruction(reason) {
-                const title = document.getElementById('prompt-title');
-                const desc = document.getElementById('prompt-desc');
-                const btn = document.getElementById('start-btn');
-                const guide = document.getElementById('manual-guide');
-                const gTitle = document.getElementById('guide-title');
-                const gSteps = document.getElementById('guide-steps');
-
-                btn.style.display = 'none';
-                guide.style.display = 'block';
-
-                if (reason === 'no-response') {
-                    // 針對「系統沒有主動索取權限（毫無反應）」的文案解方
-                    title.innerText = "瀏覽器未回應請求";
-                    desc.innerText = "系統未能主動彈出權限視窗，這通常是因為此網頁已被預設封鎖，或正在使用非標準瀏覽器（如 Line、FB 內建瀏覽器）。";
-                    gTitle.innerText = "請嘗試以下解方：";
-                    gSteps.innerHTML = `
-                        <li>點擊右上角或右下角的<strong>「...」選單</strong>，選擇<strong>「在 Safari / Chrome 中開啟」</strong>。</li>
-                        <li>若是正常瀏覽器，請檢查網址列左側的<strong>「鎖頭」</strong>圖示，手動將相機權限改為<strong>「允許」</strong>。</li>
-                        <li>確保網址開頭為安全連線 <strong>https://</strong>（http 無法觸發相機）。</li>
-                    `;
-                } else {
-                    // 針對「明確點擊拒絕」的文案
-                    title.innerText = "相機權限遭封鎖";
-                    desc.innerText = "您拒絕了相機存取，請依照下方指引手動解鎖權限。";
-                }
-            }
-
-            function requestCamera() {
-                // 設定 3 秒定時器。如果 3 秒內沒有 resolve 或 reject，就判定為系統無回應
-                const timeoutId = setTimeout(() => {
-                    showManualInstruction('no-response');
-                }, 3000);
-
-                navigator.mediaDevices.getUserMedia({ video: true })
-                .then((stream) => {
-                    clearTimeout(timeoutId); // 成功回應，清除定時器
-                    stream.getTracks().forEach(track => track.stop());
-                    document.getElementById('permission-overlay').style.display = 'none';
-                })
-                .catch((err) => {
-                    clearTimeout(timeoutId); // 失敗回應，清除定時器
-                    console.error("相機存取失敗:", err);
-                    showManualInstruction('denied');
-                });
-            }
-        </script>
     </body>
 </html>
